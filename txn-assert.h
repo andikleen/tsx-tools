@@ -16,7 +16,7 @@
 	do if (!(x)) { TXN_ABORT(); assert(0); } while(0)
 
 /* Only assert when in a transction. nop when not */
-#define TSX_ASSERT_ONLY(x) \
+#define TXN_ASSERT_ONLY(x) \
 	do if (!(x)) TXN_ABORT(); while(0)
 
 

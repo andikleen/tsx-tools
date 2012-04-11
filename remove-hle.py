@@ -34,7 +34,7 @@ def process(i, pfile):
             for o in objdump:
                 if re.match(r"\s+\d+\s", o):
                     (idx, name, size, vma, lma, foff, algn) = o.split()
-        	    sections[name] = Section(name, int(vma, 16), int(foff, 16))
+        	    sections[name] = Section(name, int(foff, 16), int(vma, 16))
                     #print "section header %s" % (name,)
                 if re.match(r"^$", o): 
                     break
