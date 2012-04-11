@@ -19,5 +19,8 @@
 #define TXN_ASSERT_ONLY(x) \
 	do if (!(x)) TXN_ABORT(); while(0)
 
+/* Code implementing own RTM transactions can call this function to 
+   make TXN_ASSERTs work inside. */
+extern void txn_assert_abort_hook(unsigned status);
 
 #endif
