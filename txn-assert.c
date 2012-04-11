@@ -1,5 +1,7 @@
 #include "hle.h"
 
+#define PAIR(x) x, sizeof(x) - 1
+
 typedef void (*tsx_assert_hook_t)(unsigned);
 extern tsx_assert_hook_t __tsx_set_abort_hook(tsx_assert_hook_t);
 
