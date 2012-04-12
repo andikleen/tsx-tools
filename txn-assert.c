@@ -1,4 +1,5 @@
 #define _GNU_SOURCE 1
+#include <stdlib.h>
 #include <dlfcn.h>
 #include <string.h>
 #include "hle.h"
@@ -20,6 +21,7 @@ void txn_assert_abort_hook(unsigned status)
 		msg = txn_assert_table[XABORT_STATUS(status)],
 		write(2, msg, strlen(msg));
 		write(2, "\n", 1);
+		abort();
 	} 
 }
 
