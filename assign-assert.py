@@ -54,7 +54,6 @@ def process(i, pfile):
                 if re.match("\s*xabort", o[32:]):
                     foff = vaddr - section.vaddr + section.foff
                     if pfile:
-                        print "patch at %d" % (foff + 2,)
                         if identifier > 254:
                             # XXX fix assert code to print multiple
                             print >>sys.stderr, "error: too many txn_asserts"
