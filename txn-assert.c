@@ -19,15 +19,21 @@ void txn_assert_abort_hook(unsigned status)
 	} 
 }
 
+typedef void (*abort_hook)(unsigned);
+extern abort_hook __tsx_set_abort_hook(abort_hook);
+
 static void __attribute__((constructor)) init_txn_assert(void)
 {
-	typedef void (*abort_hook)(unsigned);
+#if 0
+	__tsx_set_abort_hook(txn_assert_abort_hook);
+#else
 	abort_hook (*set_abort_hook)(abort_hook) = 
-		dlsym(RTLD_DEFAULT, "__tsx_set_abort_hook");
+		dlsym(RTLD_DEFAULT, "__set_abort_hook");
 	if (!set_abort_hook) {
-		write(2, PAIR("__tsx_set_abort_hook not supported by glibc\n"));
+		write(2, PAIR("__set_abort_hook not supported by glibc\n"));
 		return;
 	}
 	set_abort_hook(txn_assert_abort_hook);
+#endif
 }
 
