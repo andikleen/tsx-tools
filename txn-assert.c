@@ -16,6 +16,7 @@ void txn_assert_abort_hook(unsigned status)
 		XABORT_STATUS(status) < txn_assert_table_size) {
         	write(2, PAIR("txn assert failure at "));
 		write(2, txn_assert_table[XABORT_STATUS(status)]);
+		write(2, "\n", 1);
 	} 
 }
 
