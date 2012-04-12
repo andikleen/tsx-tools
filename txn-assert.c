@@ -1,5 +1,6 @@
 #define _GNU_SOURCE 1
 #include <dlfcn.h>
+#include <string.h>
 #include "hle.h"
 
 #define PAIR(x) x, sizeof(x) - 1
