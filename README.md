@@ -2,7 +2,7 @@
 
 # Useful TSX related tools
 
-TSX (Intel Transactional Synchronization Extension) is a hardware transactional memory in recent Intel CPU codenamed Haswell. For more information see http://en.wikipedia.org/wiki/Transactional_Synchronization_Extensions
+TSX (Intel Transactional Synchronization Extension) is a hardware transactional memory extension in recent Intel CPU codenamed Haswell. For more information see http://en.wikipedia.org/wiki/Transactional_Synchronization_Extensions
 
 This package provides some tools for TSX development.
 
@@ -17,10 +17,11 @@ flow of abort handlers directly using "asm goto".
 	#include "rtm.h"	/* For gcc 4.8 use immintrin.h and -mrtm */
 	..
 	if (_xbegin() == _XBEGIN_STARTED) {
+		/* read lock */
 		/* transaction */
 		_xend();
 	} else 
-		/* fallback */
+		/* fallback to read lock */
 
 ### hle-emulation.h
 
@@ -29,13 +30,13 @@ flow of abort handlers directly using "asm goto".
 
 	static volatile int lock;
 
-	/* Take lock */
+	/* Take elided lock */
 	while (__hle_acquire_test_and_set(&lock) == 1) {
 		while (lock == 0)
 			_mm_pause();
 	}
 	...
-	/* Release lock */
+	/* Release elided lock */
 	__hle_release_clear(&lock);
 
 ## ignore-xend.so
