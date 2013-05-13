@@ -24,3 +24,8 @@ then use with -p binary to patch.
 Warning: this can destroy a binary since there can be false positives.
 Always run on a backup copy.
 
+## tsx-assert 
+
+A facility to do asserts in transactions.
+Requires a special hook into the elided lock library
+
