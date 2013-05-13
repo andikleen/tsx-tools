@@ -24,4 +24,7 @@ hle-emulation.h
 An emulation of the gcc 4.8+ HLE atomic intrinsics
 These are similar in spirit, but do not fully match the intrinsics.
 
+hle-ms.h
+An emulation of the Microsoft compiler HLE intrinsics for gcc.
+
 Andi Kleen

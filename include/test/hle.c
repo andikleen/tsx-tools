@@ -2,14 +2,13 @@
 #include "hle-emulation.h"
 #include <assert.h>
 
-int lock;
-
 #define TEST_OP_FETCH(type, sz)						\
 	{								\
 		static type lock;					\
 		type res;						\
 		res = __hle_acquire_add_fetch##sz(&lock, 1);		\
 		assert(res == 1);				\
+		assert(lock == 1);				\
 		res = __hle_release_sub_fetch##sz(&lock, 1);	\
 		assert(res == 0);			\
 		assert(lock == 0);			\
@@ -21,6 +20,7 @@ int lock;
 		type res;						\
 		res = __hle_acquire_fetch_add##sz(&lock, 1);		\
 		assert(res == 0);					\
+		assert(lock == 1);				\
 		res = __hle_release_fetch_sub##sz(&lock, 1);		\
 		assert(res == 1);			\
 		assert(lock == 0);			\
@@ -32,6 +32,7 @@ int lock;
 		type res;						\
 		res = __hle_acquire_exchange_n##sz(&lock, 1);		\
 		assert(res == 0);				\
+		assert(lock == 1);				\
 		__hle_release_clear##sz(&lock);			\
 		assert(lock == 0);			\
 	}
@@ -42,6 +43,7 @@ int lock;
 		type res;						\
 		res = __hle_acquire_test_and_set##sz(&lock);		\
 		assert(res == 0);				\
+		assert(lock == 1);				\
 		__hle_release_clear##sz(&lock);			\
 		assert(lock == 0);			\
 	}
