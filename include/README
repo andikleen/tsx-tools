@@ -1,0 +1,27 @@
+Compat header files for RTM and HLE on gcc
+
+RTM and HLE are the two programing interfaces to Intel TSX.
+See http://en.wikipedia.org/wiki/Transactional_Synchronization_Extensions
+
+Newer compilers have intrinsics for the HLE and RTM instructions.
+These headers files provide them for older gcc (and gcc compatible
+like clang, icc, sun cc) compilers.
+
+rtm.h 	
+Provides the standard TSX intrinsics _xbegin(), _xend(), _xtest(), _xabort()
+
+hle-official.h	
+Same as rtm.h (compat name)
+
+rtm-goto.h 	
+Alternative unofficial RTM intrinsics implementation
+for gcc 4.6 with asm goto support (Fedora) or gcc 4.7+
+This saves a few instruction for every transaction setup
+by exposing the jump to the abort handler to the programmer.
+Useful for people who care about micro optimizations.
+
+hle-emulation.h
+An emulation of the gcc 4.8+ HLE atomic intrinsics
+These are similar in spirit, but do not fully match the intrinsics.
+
+Andi Kleen

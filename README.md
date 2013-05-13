@@ -6,6 +6,12 @@ TSX (Intel Transactional Synchronization Extension) is a hardware transactional 
 
 This package provides some tools for TSX development.
 
+## Emulated headers for HLE and RTM intrinsics
+
+Headers to emulate the gcc 4.8+ HLE/RTM intrinsics on older gcc compatible
+providers. Plus a special header to expose the control flow of abort
+handlers directly using "asm goto".
+
 ## ignore-xend.so
 
 When running with the RTM enabled glibc unlocking and unlocked lock causes 
