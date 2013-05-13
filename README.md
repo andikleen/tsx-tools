@@ -12,6 +12,32 @@ Headers to emulate the gcc 4.8+ and the Microsoft HLE/RTM intrinsics on
 older gcc compatible providers. Plus a special header to expose the control
 flow of abort handlers directly using "asm goto".
 
+### rtm.h
+	
+	#include "rtm.h"	/* For gcc 4.8 use immintrin.h and -mrtm */
+	..
+	if (_xbegin() == _XBEGIN_STARTED) {
+		/* transaction */
+		_xend();
+	} else 
+		/* fallback */
+
+### hle-emulation.h
+
+	#include "hle-emulation.h"
+	#include "immintrin.h"	/* for _mm_pause() */
+
+	static volatile int lock;
+
+	/* Take lock */
+	while (__hle_acquire_test_and_set(&lock) == 1) {
+		while (lock == 0)
+			_mm_pause();
+	}
+	...
+	/* Release lock */
+	__hle_release_clear(&lock);
+
 ## ignore-xend.so
 
 When running with the RTM enabled glibc unlocking and unlocked lock causes 
