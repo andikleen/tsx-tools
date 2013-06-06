@@ -1,7 +1,7 @@
 # do not remove -g here
 CFLAGS := -g -I include
 CLEAN := ignore-xend.so assert-test assert-test.patched.o txn-assert.o a.o \
-         a.c assert-test.o
+         a.c assert-test.o has-tsx
 
 all: ignore-xend.so assert-test has-tsx
 
