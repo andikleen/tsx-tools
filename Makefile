@@ -3,7 +3,7 @@ CFLAGS := -g -I include
 CLEAN := ignore-xend.so assert-test assert-test.patched.o txn-assert.o a.o \
          a.c assert-test.o
 
-all: ignore-xend.so assert-test
+all: ignore-xend.so assert-test has-tsx
 
 ignore-xend.so: ignore-xend.c
 	gcc -fPIC -shared -g -o ignore-xend.so ignore-xend.c
