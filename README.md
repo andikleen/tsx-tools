@@ -34,6 +34,11 @@ flow of abort handlers directly using "asm goto".
 
 ### hle-emulation.h
 
+Similar to the HLE extensions to the atomic intrinsics in gcc 4.8+,
+but implemented for older compilers. See
+http://software.intel.com/en-us/blogs/2013/05/20/using-hle-and-rtm-with-older-compilers-with-tsx-tools
+for more details
+
         #include "hle-emulation.h"
         #include "immintrin.h"  /* for _mm_pause() */
 
@@ -47,6 +52,28 @@ flow of abort handlers directly using "asm goto".
         ...
         /* Release elided lock */
         __hle_release_clear(&lock);
+
+## hle-ms.h
+
+Provide Microsoft C compatible HLE intrinsics for gcc.
+
+## tsx-cpuid.h
+
+Utility functions to check if the current CPU supports HLE or RTM
+
+	#include "tsx-cpuid.h"
+
+	init:
+		if (cpu_has_rtm())
+			have_rtm = 1;
+
+	lock code:
+		if (have_rtm && _xbegin() == _XBEGIN_STARTED) {
+			/* RTM code */
+			_xend();
+		} else { 
+			/* fallback */
+		}
 
 ## ignore-xend.so
 
