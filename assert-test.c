@@ -1,21 +1,13 @@
-#include "txn-assert.h"
-#include "hle-official.h"
+#include "tsx-assert.h"
+#include "rtm.h"
 
 int foo;
-
-void f2()
-{
-	TXN_ASSERT_ONLY(foo);
-}
 
 int main(void)
 {
 	unsigned status;
 	if ((status = _xbegin()) == 0) { 
-		TXN_ASSERT_ONLY(!foo);
-	} else { 
-		txn_assert_abort_hook(status);
-	}	
-	f2();
+		tsx_assert(foo);
+	}
 	return 0;
 }
