@@ -2,13 +2,13 @@
 
 # Useful TSX related tools
 
-TSX (Intel Transactional Synchronization Extension) is a hardware transactional memory extension in recent Intel CPU codenamed Haswell. For more information see http://en.wikipedia.org/wiki/Transactional_Synchronization_Extensions
+TSX (Intel Transactional Synchronization Extension) is a hardware transactional memory extension in recent 4th generation Core Intel CPUs codenamed Haswell. For more information see http://en.wikipedia.org/wiki/Transactional_Synchronization_Extensions and http://www.intel.com/software/tsx
 
-This package provides some tools for TSX development.
+This package provides some tools and libraries for TSX development.
 
 ## has-tsx
 
-Query the current
+Check if the current CPU supports TSX.
 
         % make
         % ./has-tsx
@@ -53,13 +53,33 @@ for more details
         /* Release elided lock */
         __hle_release_clear(&lock);
 
-## hle-ms.h
+### hle-ms.h
 
 Provide Microsoft C compatible HLE intrinsics for gcc.
 
+### rtm-goto.h
+
+An experimential RTM intrinsics implementation that directly exposes the control
+flow of the abort handler. This allows to save a few instructions and may be
+clearer. Requires a compiler with "asm goto" support (gcc 4.7+ or some earlier
+RedHat gcc versions)
+
+	#include "rtm-goto.h"
+
+	XBEGIN(abort_handler);
+	/* Transaction */
+	XEND();	
+	return;
+
+	/* Transaction aborts come here */
+	unsigned status;
+	XABORT_STATUS(status);
+	/* Examine status to determine abort cause */
+	/* Fallback path */
+
 ## tsx-cpuid.h
 
-Utility functions to check if the current CPU supports HLE or RTM
+Utility functions to check if the current CPU supports HLE or RTM from a program.
 
 	#include "tsx-cpuid.h"
 
@@ -97,4 +117,5 @@ Always run on a backup copy.
 
 A facility to do asserts in transactions.
 Requires a special hook into the elided lock library
+Obsolete.
 
