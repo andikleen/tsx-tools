@@ -21,6 +21,7 @@
    from a newer installation. */
 
 #include <cpuid.h>
+#include <stddef.h>
 
 #define CPUID_RTM (1 << 11)
 #define CPUID_HLE (1 << 4)
