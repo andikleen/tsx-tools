@@ -18,7 +18,7 @@ int main(void)
 	return 0;
 
 	/* Abort comes here */
-	XABORT_STATUS(abort, status);
+	XFAIL_STATUS(abort, status);
 	printf("aborted %x, %d", status, XABORT_CODE(status));
 	return 0;
 }

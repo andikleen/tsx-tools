@@ -64,6 +64,9 @@ Abort a transaction.
 #define XFAIL(label) label: asm volatile("" ::: "eax")
 #define XFAIL_STATUS(label, status) label: asm volatile("" : "=a" (status))
 
+#include "rtm.h"
+#define XTEST() _xtest()
+
 /* Status bits */
 #define XBEGIN_STARTED		(~0u)
 #define XABORT_EXPLICIT	(1 << 0)
