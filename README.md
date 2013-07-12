@@ -18,7 +18,7 @@ Check if the current CPU supports TSX.
 ## Emulated headers for HLE and RTM intrinsics
 
 Headers to emulate the gcc 4.8+ and the Microsoft HLE/RTM intrinsics on
-older gcc compatible providers. Plus a special header to expose the control
+older gcc compatible compilers. Plus a special header to expose the control
 flow of abort handlers directly using "asm goto".
 
 ### rtm.h
