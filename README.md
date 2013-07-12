@@ -113,9 +113,25 @@ then use with -p binary to patch.
 Warning: this can destroy a binary since there can be false positives.
 Always run on a backup copy.
 
-## tsx-assert 
+## tsx-assert.h
 
-A facility to do asserts in transactions.
-Requires a special hook into the elided lock library
-Obsolete.
+Normal assert does not work in TSX transaction. The assert output
+is an IO operation, which causes an abort so the assert gets
+discarded (unless it happens again when re-executed non transactionally)
 
+This can be a curse or a blessing, but there are some situations
+where it is inconvenient.
+ 
+tsx-assert.h provides a TSX aware assert. It only works with RTM, not with HLE.
+It commits the transaction before executing the assert.
+
+	#include "tsx-assert.h"
+
+	/* in transaction */
+	tsx_assert(condition);
+
+Link the program with the tsx-assert.o object file
+
+	gcc ... tsx-assert.o
+
+Based on a idea from Torvald Riegel.
