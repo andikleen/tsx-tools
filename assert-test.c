@@ -6,7 +6,7 @@ int foo;
 int main(void)
 {
 	unsigned status;
-	if ((status = _xbegin()) == 0) { 
+	if ((status = _xbegin()) == _XBEGIN_STARTED) { 
 		tsx_assert(foo);
 	}
 	return 0;
