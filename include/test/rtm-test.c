@@ -1,4 +1,7 @@
-#include "rtm.h"
+#ifndef HDR 
+#define HDR "rtm.h"
+#endif
+#include HDR
 #include <stdio.h>
 
 /* Requires TSX support in the CPU */
