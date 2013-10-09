@@ -1,5 +1,5 @@
 CFLAGS := -I include
-CLEAN := ignore-xend.so assert-test assert-test.o has-tsx
+CLEAN := ignore-xend.so assert-test assert-test.o has-tsx tsx-assert.o
 
 all: ignore-xend.so assert-test has-tsx tsx-assert.o 
 
