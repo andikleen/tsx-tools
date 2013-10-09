@@ -27,17 +27,33 @@ volatile int bad_xends;
 static void handler(int sig, siginfo_t *si, void *ctx_ptr)
 {
 	ucontext_t *ctx = ctx_ptr;
+#ifdef __DARWIN_UNIX03
+	uint64_t addr = (uint64_t) ctx->uc_mcontext->__ss.__rip;
+#else
 	uint64_t addr = (uint64_t) ctx->uc_mcontext.gregs[REG_RIP];
+#endif
 
+#ifdef __DARWIN_UNIX03
+	if (ctx->uc_mcontext->__es.__trapno != 13)
+#else
 	if (ctx->uc_mcontext.gregs[REG_TRAPNO] != 13)
+#endif
 		return;
 	/* Avoid nested non GP faults */
 	if (addr >> 48 != 0 && addr >> 48 != 0xffff)
 		return;
+#ifdef __DARWIN_UNIX03
+	uint8_t *ip = (void *) ctx->uc_mcontext->__ss.__rip;
+#else
 	uint8_t *ip = (void *) ctx->uc_mcontext.gregs[REG_RIP];
+#endif
 	if (ip[0] == 0x0f && ip[1] == 0x01 && ip[2] == 0xd5) { /* XEND */
 		__sync_fetch_and_add(&bad_xends, 1);
+#ifdef __DARWIN_UNIX03
+		ctx->uc_mcontext->__ss.__rip += 3;
+#else
 		ctx->uc_mcontext.gregs[REG_RIP] += 3;
+#endif
 	}
 }
 
