@@ -6,6 +6,12 @@ TSX (Intel Transactional Synchronization Extension) is a hardware transactional 
 
 This package provides some tools and libraries for TSX development.
 
+## Compilation notes
+
+You may need to update your compiler's copy of `cpuid.h` depending on the version. In general, it should be sufficient to simply copy the file from a newer source distribution.
+
+For example, on Mac OS X with LLVM version 4.2 (check with `cc --version`), you should replace `/usr/lib/clang/4.2/include/cpuid.h` with the one available at https://llvm.org/viewvc/llvm-project/cfe/trunk/lib/Headers/cpuid.h?view=co
+
 ## has-tsx
 
 Check if the current CPU supports TSX.
