@@ -5,15 +5,15 @@ CFLAGS := -Wall -g -I .. -O2
 
 all: ${ALL}
 
-hle2: hle2.c ../hle-ms.h
+hle2.c: ../hle-ms.h
 
-hle: hle.c ../hle-emulation.h
+hle.c: ../hle-emulation.h
 
-rtm-test: ../rtm.h
+rtm-test.c: ../rtm.h
 
-rtm-goto-test: ../rtm-goto.h
+rtm-goto-test.c: ../rtm-goto.h
 
-rtm-patched: ../rtm-patched.h 
+rtm-patched: ../rtm-patched.h  rtm-test.c
 	${CC} -o rtm-patched -DHDR=\"rtm-patched.h\" ${CFLAGS} rtm-test.c
 
 clean:
