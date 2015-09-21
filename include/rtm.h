@@ -43,10 +43,11 @@ static __rtm_force_inline void _xend(void)
 	 asm volatile(".byte 0x0f,0x01,0xd5" ::: "memory");
 }
 
-static __rtm_force_inline void _xabort(const unsigned int status)
-{
-	asm volatile(".byte 0xc6,0xf8,%P0" :: "i" (status) : "memory");
-}
+/* This is a macro because some compilers do not propagate the constant
+ * through an inline with optimization disabled.
+ */
+#define _xabort(status) \
+	asm volatile(".byte 0xc6,0xf8,%P0" :: "i" (status) : "memory")
 
 static __rtm_force_inline int _xtest(void)
 {

@@ -87,14 +87,13 @@ static __rtm_force_inline void _xend(void)
 	asm volatile (".byte 0x0f,0x01,0xd5" ::: "memory");
 }
 
-static __rtm_force_inline void _xabort(const unsigned int status)
-{
-	asm volatile(ORIG_CODE
-		     ASM_NOP3
-		     ALT_CODE
-		     ".byte 0xc6,0xf8,%P0" 
-		     ALT_CODE_END :: "i" (status) : "memory");
-}
+/* Some compilers do not propagate the constant when not optimizing. */
+#define _xabort(status) \
+	asm volatile(ORIG_CODE \
+		     ASM_NOP3  \
+		     ALT_CODE  \
+		     ".byte 0xc6,0xf8,%P0"  \
+		     ALT_CODE_END :: "i" (status) : "memory")
 
 static __rtm_force_inline int _xtest(void)
 {
