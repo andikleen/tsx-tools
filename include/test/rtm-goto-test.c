@@ -9,6 +9,8 @@
 
 int main(void)
 {
+	/* LLVM as of 3.5 does not support asm goto */
+#ifndef __clang__
 	unsigned status;
 
 	XBEGIN(abort);
@@ -21,4 +23,5 @@ int main(void)
 	XFAIL_STATUS(abort, status);
 	printf("aborted %x, %d", status, XABORT_CODE(status));
 	return 0;
+#endif
 }
