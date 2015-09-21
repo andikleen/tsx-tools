@@ -29,7 +29,10 @@
 
    tsx-patch.o needs to be linked into each individual shared library
    using this. The code is self modifying, so the code pages will
-   not be shared. */
+   not be shared. Self-modifying code has some disadvantages, as it
+   can make debugging harder (the debugger may not see the code that
+   actually runs). Normally TSX code is quite limited though, so
+   this should not be a significant problem. */
 
 #define _XBEGIN_STARTED		(~0u)
 #define _XABORT_EXPLICIT	(1 << 0)
@@ -48,11 +51,18 @@
 
 #define __rtm_force_inline __attribute__((__always_inline__)) inline
 
+#if __SIZEOF_POINTER__ == 8
+#define ASM_POINTER(x) ".quad " x "; "
+#else
+#define ASM_POINTER(x) ".long " x "; "
+#endif
+
 #define ORIG_CODE "0: "
 #define ALT_CODE  				\
 	"\n1:\n\t"  				\
 	".section \".text.rtmpatch\" ; "	\
-	".long 0b ; .long 3f ; .long 1b-0b ; .previous ; " \
+	ASM_POINTER("0b") ASM_POINTER("3f") ASM_POINTER("1b-0b") \
+	".previous ; " \
         ".section \".text.rtmalt\",\"ax\" ; 3: "
 #define ALT_CODE_END "\n\t.previous"
 
