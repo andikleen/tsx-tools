@@ -141,3 +141,12 @@ Link the program with the tsx-assert.o object file
 	gcc ... tsx-assert.o
 
 Based on a idea from Torvald Riegel.
+
+## glibc-tune
+
+glibc tune allows to change the lock elision parameters in the currently running glibc.
+
+This can be useful to experiment with elision enabled/disabled, force enable
+elision on glibc builds that were not built with --enable-lock-elision=yes, 
+or tune retry parameters to improve performance on larger systems.
+
