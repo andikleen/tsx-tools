@@ -150,3 +150,6 @@ This can be useful to experiment with elision enabled/disabled, force enable
 elision on glibc builds that were not built with --enable-lock-elision=yes, 
 or tune retry parameters to improve performance on larger systems.
 
+## locks
+
+tsxlocks is a simple library of reference TSX lock elision locks.
