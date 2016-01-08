@@ -1,0 +1,263 @@
+@node Lock elision, Language Features, POSIX Threads, Top
+@c %MENU% Lock elision
+@chapter Lock elision
+
+@c create the bizarre situation that lock elision is documented, but pthreads isn't
+
+This chapter describes the elided lock implementation for POSIX thread locks.
+
+@menu
+* Lock elision introduction::	What is lock elision?
+* Semantic differences of elided locks::
+* Tuning lock elision::
+* Setting elision for individual @code{pthread_mutex_t}::
+* Setting @code{pthread_mutex_t} elision using environment variables::
+* Setting elision for individual @code{pthread_rwlock_t}::
+* Setting @code{pthread_rwlock_t} elision using environment variables::
+@end menu 
+
+@node Lock elision introduction
+@section Lock elision introduction
+
+Lock elision is a technique to improve lock scaling. It runs
+lock regions in parallel using hardware support for a transactional execution
+mode. The lock region is executed speculatively, and as long
+as there is no conflict or other reason for transaction abort the lock
+will executed in parallel. If an transaction abort occurs, any 
+side effect of the speculative execution is undone, the lock is taken
+for real and the lock region re-executed. This improves scalability
+of the program because locks do not need to wait for each other.
+
+The standard @code{pthread_mutex_t} mutexes and @code{pthread_rwlock_t} rwlocks
+can be transparently elided by @theglibc{}.
+
+Lock elision may lower performance if transaction aborts occur too frequently.
+In this case it is recommended to use a PMU profiler to find the causes for
+the aborts first and try to eliminate them. If that is not possible
+elision can be disabled for a specific lock or for the whole program.
+Alternatively elision can be disabled completely, and only enabled for 
+specific locks that are known to be elision friendly.
+
+The defaults locks are adaptive. The library decides whether elision
+is profitable based on the abort rates, and automatically disables
+elision for a lock when it aborts too often. After some time elision
+is re-tried, in case the workload changed.
+
+Lock elision is currently supported for default (timed) mutexes, and
+rwlocks.  Other lock types (including @code{PTHREAD_MUTEX_NORMAL}) do not elide.
+Condition variables also do not elide. This may change in future versions.
+
+@node Semantic differences of elided locks
+@section Semantic differences of elided locks
+
+Elided locks have some semantic (visible) differences to classic locks. These differences 
+are only visible when the lock is successfully elided. Since elision may always
+fail a program cannot rely on any of these semantics.
+
+@itemize
+@item
+timedlocks may not time out.
+
+@smallexample
+pthread_mutex_lock (&lock);
+if (pthread_mutex_timedlock (&lock, &timeout) == 0) 
+     /* With elision we always come here */
+else
+     /* With no elision we always come here because timeout happens. */
+@end smallexample
+
+Similar semantic changes apply to @code{pthread_rwlock_trywrlock} and
+@code{pthread_rwlock_timedwrlock}.
+
+A program like
+
+@smallexample
+/* lock is not a recursive lock type */
+pthread_mutex_lock (&lock);
+/* Relock same lock in same thread */
+pthread_mutex_lock (&lock);
+@end smallexample
+
+will immediately hang on the second lock (dead lock) without elision. With
+elision the deadlock will only happen on an abort, which can happen
+early or could happen later, but will likely not happen every time.
+
+This behavior is allowed in POSIX for @code{PTHREAD_MUTEX_DEFAULT}, but not for
+@code{PTHREAD_MUTEX_NORMAL}. When @code{PTHREAD_MUTEX_NORMAL} is
+set for a mutex using @code{pthread_mutexattr_settype} elision is implicitly
+disabled.  Note that @code{PTHREAD_MUTEX_INITIALIZER} sets a
+@code{PTHREAD_MUTEX_DEFAULT} type, thus allows elision.
+
+Depending on the ABI version @theglibc{} may not distinguish between
+@code{PTHREAD_MUTEX_NORMAL} and @code{PTHREAD_MUTEX_DEFAULT}, as they may
+have the same numerical value. If that is the case any call to
+@code{pthread_mutexattr_settype} with either type will disable elision.
+
+@item
+@code{pthread_mutex_destroy} does not return an error when the lock is locked
+and will clear the lock state.
+
+@item
+@code{pthread_mutex_t} and @code{pthread_rwlock_t} appear free from other threads.
+
+This can be visible through trylock or timedlock.
+In most cases checking this is a existing latent race in the program, but there may 
+be cases when it is not.
+
+@item
+@code{EAGAIN} and @code{EDEADLK} in rwlocks will not happen under elision.
+
+@item
+@code{pthread_mutex_unlock} does not return an error when unlocking a free lock.
+
+@item
+Elision changes timing because locks now run in parallel.
+Timing differences may expose latent race bugs in the program. Programs using time based synchronization
+(as opposed to using data dependencies) may change behavior.
+
+@end itemize
+
+@node Tuning lock elision
+@section Tuning lock elision
+
+Critical regions may need some tuning to get the benefit of lock elision.
+This is based on the abort rates, which can be determined by a PMU profiler
+(e.g. perf on @gnulinuxsystems{}). When the abort rate is too high lock
+scaling will not improve. Generally lock elision feedback should be done
+only based on profile feedback.
+
+Most of these optimizations will improve performance even without lock elision
+because they will minimize cache line bouncing between threads or make
+lock regions smaller.
+
+Common causes of transactional aborts:
+
+@itemize
+@item 
+Not elidable operations like system calls, IO, CPU exceptions.
+
+Try to move out of the critical section when common. Note that these often happen at program startup only.
+@item
+Global statistic counts
+
+Global statistic variables tend to cause conflicts. Either disable, or make per thread or as a last resort sample
+(not update every operation)
+@item
+False sharing of variables or data structures causing conflicts with other threads
+
+Add padding as needed.
+@item 
+Other conflicts on the same cache lines with other threads
+
+Minimize conflicts with other threads. This may require changes to the data structures.
+@item
+Capacity overflow
+
+The memory transaction used for lock elision has a limited capacity. Make the critical region smaller
+or move operations that do not need to be protected by the lock outside.
+
+@item
+Rewriting already set flags
+
+Setting flags or variables in shared objects that are already set may cause conflicts. Add a check
+to only write when the value changed.
+
+@item
+Using @code{pthread_mutex_trylock} or @code{pthread_rwlock_trywrlock}
+nested in another elided lock.
+
+@end itemize
+
+@node Setting @code{pthread_mutex_t} elision using environment variables
+@section Setting @code{pthread_mutex_t} elision using environment variables
+The elision of @code{pthread_mutex_t} mutexes can be configured at runtime with the @code{GLIBC_PTHREAD_MUTEX}
+environment variable.  This will force a specific lock type for all
+mutexes in the program that do not have another type set explicitly.
+An explicitly set lock type will override the environment variable.
+
+@smallexample
+# run myprogram with no elision
+GLIBC_PTHREAD_MUTEX=none myprogram
+@end smallexample
+
+The default depends on the @theglibc{} build configuration and whether the hardware
+supports lock elision.
+
+@itemize
+@item    
+@code{GLIBC_PTHREAD_MUTEX=elision}
+Use elided mutexes, unless explicitly disabled in the program.
+    
+@item
+@code{GLIBC_PTHREAD_MUTEX=none}
+Don't use elide mutexes, unless explicitly enabled in the program.
+
+@item
+@code{GLIBC_PTHREAD_MUTEX=no_elision}
+Don't use elide mutexes, unless explicitly enabled in the program.
+Alias for none.
+@end itemize
+
+Additional tunables can be configured through the environment variable,
+like this:
+@code{GLIBC_PTHREAD_MUTEX=adaptive:retry_lock_busy=10,retry_lock_internal_abort=20} 
+Note these parameters do not constitute an ABI and may change or disappear 
+at any time as the lock elision algorithm evolves. 
+
+Currently supported parameters are:
+    
+@itemize
+@item
+skip_lock_busy
+How often to not attempt a transaction when the lock is seen as busy.
+Expressed in number of lock attempts.
+    
+@item
+skip_lock_internal_abort
+How often to not attempt a transaction after an internal abort is seen.
+Expressed in number of lock attempts.
+
+@item    
+retry_try_xbegin
+How often to retry the transaction on external aborts.
+Expressed in number of transaction starts.
+
+@item
+skip_trylock_internal_abort
+How often to skip doing a transaction on internal aborts during trylock.
+This setting is also used for adaptive locks.
+Expressed in number of transaction starts.
+
+@end itemize
+
+@node Setting @code{pthread_rwlock_t} elision using environment variables
+@section Setting @code{pthread_rwlock_t} elision using environment variables
+The elision of @code{pthread_rwlock_t} rwlocks can be configured at
+runtime with the @code{GLIBC_PTHREAD_RWLOCK} environment variable.
+This will force a specific lock type for all
+rwlocks in the program that do not have another type set explicitly.
+An explicitly set lock type will override the environment variable.
+
+@smallexample
+# run myprogram with no elision
+GLIBC_PTHREAD_RWLOCK=none myprogram
+@end smallexample
+
+The default depends on the @theglibc{} build configuration and whether the hardware
+supports lock elision. Also suid programs don't enable elision by default, unless
+the choice is overriden.
+
+@itemize
+@item    
+@code{GLIBC_PTHREAD_RWLOCK=elision}
+Use elided rwlockes, unless explicitly disabled in the program.
+    
+@item
+@code{GLIBC_PTHREAD_RWLOCK=none}
+Don't use elided rwlocks, unless explicitly enabled in the program.
+
+@item
+@code{GLIBC_PTHREAD_RWLOCK=no_elision}
+Don't use elided rwlocks, unless explicitly enabled in the program.
+Alias for none.
+@end itemize

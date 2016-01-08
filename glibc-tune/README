@@ -1,0 +1,36 @@
+Tuning module for glibc lock elision parameters.
+
+gconf is a  LD_PRELOAD module that allows to change the lock elision parameters in the
+current glibc. Increasing retry counts can often improve performance on larger systems.
+Also it allows to enable lock elision even on glibcs that have not been built 
+with --enable-lock-elision=yes. It also allows to disable lock elision to easily
+compare performance.
+
+For details on the tunables see elision.texi
+
+Examples:
+
+Disable lock elision for a program
+
+LD_PRELOAD=/path/to/gtune.so GLIBC_PTHREAD_MUTEX=no_elision program
+
+Enable lock elision for a program:
+
+LD_PRELOAD=/path/to/gtune.so GLIBC_PTHREAD_MUTEX=elision program
+
+Tune retry parameters for RTM elision for larger systems
+
+Try each transaction 10 times when the lock is busy or when a conflict happens
+
+LD_PRELOAD=/path/to/gtune.so GLIBC_PTHREAD_MUTEX=elision:retry_lock_xbegin=10 program
+
+Diable rwlock elision
+
+LD_PRELOAD=/path/to/gtune.so GLIBC_PTHREAD_RWLOCK=none program
+
+Print configuration
+
+LD_PRELOAD=/path/to/gtune.so GLIBC_PTHREAD_VERBOSE=1 program
+
+
+Andi Kleen
