@@ -18,6 +18,9 @@
  */
 
 /*
+ * Please note HLE is deprecated. Please switch to RTM.
+ */
+/*
   Emulation for gcc HLE intrinsics on older compilers.
 
   gcc 4.8+ implements HLE as an additional memory ordering model for the C11+

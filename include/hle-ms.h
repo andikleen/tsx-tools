@@ -17,6 +17,10 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/*
+ * Please note HLE is deprecated. Please switch to RTM.
+ */
+
 /* 
    Microsoft compiler compatible HLE intrinsics for gcc.
 
