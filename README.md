@@ -52,7 +52,7 @@ for more details
 
         /* Take elided lock */
         while (__hle_acquire_test_and_set(&lock) == 1) {
-                while (lock == 0)
+                while (lock != 0)
                         _mm_pause();
         }
         ...
