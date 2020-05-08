@@ -64,7 +64,7 @@ RedHat gcc versions)
 
 	/* Transaction aborts come here */
 	unsigned status;
-	XFAIL_STATUS(status);
+	XFAIL_STATUS(abort_handler, status);
 	/* Examine status to determine abort cause */
 	/* Fallback path */
 
